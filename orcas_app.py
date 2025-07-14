@@ -113,27 +113,18 @@ if seleccion == "Mapa de Avistajes":
     mapa_orcas = folium.Map(
         location=[-45.0, -62.0],
         zoom_start=6,
-        tiles="https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
-        attr="© CartoDB"
+        tiles="CartoDB positron"
     )
     marker_cluster = MarkerCluster().add_to(mapa_orcas)
-
-    from folium.features import CustomIcon
-
-    icono_fijo = CustomIcon(
-        icon_image='Orca.png', 
-        icon_size=(40, 40),
-        icon_anchor=(20, 20)
-    )
 
     for _, row in df_avistajes_filtrado.iterrows():
         folium.Marker(
             location=[row["Latitud"], row["Longitud"]],
-            popup=crear_popup_avistaje(row),
-            icon=icono_fijo
+            popup=crear_popup_avistaje(row)
         ).add_to(marker_cluster)
 
-    st_folium(mapa_orcas, width=700, height=500)
+    st_folium(mapa_orcas, width=1000, height=600, returned_objects=[])
+
 
 elif seleccion == "Gráficos por Categorías":
     st.title("Orcas Península Valdés")
