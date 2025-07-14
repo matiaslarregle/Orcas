@@ -113,7 +113,8 @@ if seleccion == "Mapa de Avistajes":
     mapa_orcas = folium.Map(
         location=[-45.0, -62.0],
         zoom_start=6,
-        tiles="CartoDB positron"
+        tiles="https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
+        attr="© CartoDB"
     )
     marker_cluster = MarkerCluster().add_to(mapa_orcas)
 
@@ -123,7 +124,7 @@ if seleccion == "Mapa de Avistajes":
             popup=crear_popup_avistaje(row)
         ).add_to(marker_cluster)
 
-    st_folium(mapa_orcas, width=1000, height=600, returned_objects=[])
+    st_folium(mapa_orcas, width=700, height=500, returned_objects=[])
 
 
 elif seleccion == "Gráficos por Categorías":
