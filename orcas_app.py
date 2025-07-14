@@ -226,6 +226,7 @@ elif seleccion == "Datos Generales":
 elif seleccion == "Relación entre Orcas":
     st.title("Orcas Península Valdés")
 
+    # --- Filtrado de datos ---
     df_filtrado = df.copy()
     if grupos:
         df_filtrado = df_filtrado[df_filtrado["Grupo"].isin(grupos)]
@@ -238,9 +239,11 @@ elif seleccion == "Relación entre Orcas":
         (df_filtrado["Fecha"] >= rango_fechas[0]) & (df_filtrado["Fecha"] <= rango_fechas[1])
     ]
 
+    # --- Obtener orcas conocidas y mapa de grupos ---
     orcas_conocidas = df_filtrado["Orca"].unique()
     mapa_grupo = df_filtrado.drop_duplicates("Orca").set_index("Orca")["Grupo"].to_dict()
 
+    # --- Generar parejas de co-avistajes ---
     df_avistajes = df_filtrado[["Fecha", "Lugar", "Orcas"]].drop_duplicates()
     parejas = []
     for orcas_str in df_avistajes["Orcas"]:
@@ -251,49 +254,58 @@ elif seleccion == "Relación entre Orcas":
 
     conteo_parejas = Counter(parejas)
 
+    # --- Parámetro: peso mínimo para mostrar relación ---
     PESO_MINIMO = 2
 
+    # --- Visualización del grafo ---
     st.subheader(f"Grafo de orcas avistadas juntas")
 
+    # --- Crear grafo con relaciones filtradas ---
     G = nx.Graph()
     for (o1, o2), peso in conteo_parejas.items():
         if peso >= PESO_MINIMO:
             G.add_edge(o1, o2, weight=peso)
 
+    # --- Layout de nodos ---
     pos = nx.spring_layout(G, k=0.7, seed=42)
 
+    # --- Colores por grupo ---
     colores_grupos = {}
     palette = px.colors.qualitative.Set3 + px.colors.qualitative.Pastel
     grupos_unicos = sorted(set(map(str, mapa_grupo.values())))
     for i, grupo in enumerate(grupos_unicos):
         rgb = palette[i % len(palette)].replace("rgb(", "").replace(")", "").split(",")
-        hex_color = '{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+        hex_color = '#{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
         colores_grupos[grupo] = hex_color
 
     colores_nodos = []
     tamaños_nodos = []
     for nodo in G.nodes:
         grupo = mapa_grupo.get(nodo, "Desconocido")
-        color = colores_grupos.get(grupo, "999999")
+        color = colores_grupos.get(grupo, "#999999")
         colores_nodos.append(color)
         conexiones = list(G.neighbors(nodo))
         peso_total = sum(G[nodo][vecino]['weight'] for vecino in conexiones)
         tamaño = min(100 + peso_total * 30, 1000)
         tamaños_nodos.append(tamaño)
 
+    # --- Dibujar grafo con mejoras de legibilidad ---
     fig, ax = plt.subplots(figsize=(14, 12))
     nx.draw_networkx_nodes(G, pos, node_color=colores_nodos, node_size=tamaños_nodos, alpha=0.9, ax=ax)
 
+    # Bordes con grosor y transparencia proporcional al peso
     pesos = [G[u][v]['weight'] for u, v in G.edges]
     anchos = [0.5 + w * 0.8 for w in pesos]
     opacidades = [0.2 + min(w / max(pesos), 1) * 0.5 for w in pesos]
     for (u, v), ancho, alpha in zip(G.edges, anchos, opacidades):
         nx.draw_networkx_edges(G, pos, edgelist=[(u, v)], width=ancho, alpha=alpha, edge_color='black', ax=ax)
 
+    # Etiquetas con fondo blanco
     for nodo, (x, y) in pos.items():
         ax.text(x, y, nodo, fontsize=10, fontweight='bold', ha='center', va='center',
                 bbox=dict(facecolor='white', edgecolor='none', boxstyle='round,pad=0.15', alpha=0.8))
 
+    # Leyenda de grupos
     handles = [plt.Line2D([0], [0], marker='o', color='w',
                           label=grupo,
                           markerfacecolor=color,
