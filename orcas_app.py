@@ -8,6 +8,8 @@ import networkx as nx
 from collections import Counter
 import matplotlib.pyplot as plt
 from streamlit_option_menu import option_menu
+import seaborn as sns
+import networkx as nx
 
 st.set_page_config(page_title="Avistajes de Orcas Península Valdés", layout="wide")
 
