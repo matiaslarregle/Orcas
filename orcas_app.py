@@ -1,32 +1,20 @@
-%%writefile app.py
 import streamlit as st
 import pandas as pd
-import folium
-import base64
-import os
-from folium.plugins import MarkerCluster
-from streamlit_folium import st_folium
-from streamlit_option_menu import option_menu
 import plotly.express as px
 import itertools
 import networkx as nx
-from pyvis.network import Network
-import streamlit.components.v1 as components
 from collections import Counter
 import matplotlib.pyplot as plt
-import seaborn as sns
+from streamlit_option_menu import option_menu
 
-# Configuración general
 st.set_page_config(page_title="Avistajes de Orcas Península Valdés", layout="wide")
 
-# Leer datos
 df = pd.read_csv("Orcas.csv")
 df["Fecha"] = pd.to_datetime(df["Fecha"], errors="coerce")
 
-# Menú lateral
 with st.sidebar:
     seleccion = option_menu(
-        "Visualizaciones",  # Título menú
+        "Visualizaciones", 
         [
             "Mapa de Avistajes",
             "Gráficos por Categorías",
@@ -34,11 +22,10 @@ with st.sidebar:
             "Relación entre Orcas"
         ],
         icons=["map", "bar-chart", "clipboard-data", "people"],
-        menu_icon="cast",  # Icono del menú
+        menu_icon="cast", 
         default_index=0
     )
 
-# ----------------------------- FILTROS DINÁMICOS -----------------------------
 st.sidebar.header("Filtros")
 
 grupos = st.sidebar.multiselect("Grupo", options=sorted(df["Grupo"].dropna().unique()))
@@ -59,7 +46,6 @@ min_fecha = df["Fecha"].min().to_pydatetime()
 max_fecha = df["Fecha"].max().to_pydatetime()
 rango_fechas = st.sidebar.slider("Rango de fechas", min_fecha, max_fecha, (min_fecha, max_fecha), format="YYYY-MM-DD")
 
-# Aplicar todos los filtros al dataframe final
 df_filtrado = df.copy()
 if grupos:
     df_filtrado = df_filtrado[df_filtrado["Grupo"].isin(grupos)]
@@ -75,19 +61,15 @@ df_filtrado = df_filtrado[(df_filtrado["Fecha"] >= rango_fechas[0]) & (df_filtra
 
 st.markdown(f"📆 Mostrando registros entre **{rango_fechas[0].strftime('%d/%m/%Y')}** y **{rango_fechas[1].strftime('%d/%m/%Y')}**")
 
-# ======================== SECCIÓN 1: Mapa de Avistajes ========================
 if seleccion == "Mapa de Avistajes":
     st.title("Orcas Península Valdés")
 
-    # Convertir latitud y longitud a numéricos y limpiar nulos
     df["Latitud"] = pd.to_numeric(df["Latitud"], errors="coerce")
     df["Longitud"] = pd.to_numeric(df["Longitud"], errors="coerce")
     df.dropna(subset=["Latitud", "Longitud"], inplace=True)
 
-    # Crear dataframe de avistajes únicos
     df_avistajes = df[["Fecha", "Lugar", "Latitud", "Longitud", "Orcas", "Link"]].drop_duplicates()
 
-    # Aplicar filtros
     df_orcas_filtradas = df.copy()
     if grupos:
         df_orcas_filtradas = df_orcas_filtradas[df_orcas_filtradas["Grupo"].isin(grupos)]
@@ -103,7 +85,6 @@ if seleccion == "Mapa de Avistajes":
         (df_orcas_filtradas["Fecha"] >= rango_fechas[0]) & (df_orcas_filtradas["Fecha"] <= rango_fechas[1])
     ]
 
-    # Filtrar avistajes que contengan alguna orca válida
     def contiene_orca_valida(orcas_avistaje, orcas_validas):
         lista = [o.strip() for o in orcas_avistaje.split(",")]
         return any(orca in orcas_validas for orca in lista)
@@ -111,7 +92,6 @@ if seleccion == "Mapa de Avistajes":
     orcas_validas = df_orcas_filtradas["Orca"].unique().tolist()
     df_avistajes_filtrado = df_avistajes[df_avistajes["Orcas"].apply(lambda x: contiene_orca_valida(x, orcas_validas))]
 
-    # Función para generar el popup
     def crear_popup_avistaje(row):
         return folium.Popup(f"""
             <div style="width:220px; font-family:Arial; font-size:13px">
@@ -122,7 +102,6 @@ if seleccion == "Mapa de Avistajes":
             </div>
         """, max_width=250)
 
-    # Crear el mapa base
     mapa_orcas = folium.Map(
         location=[-45.0, -62.0],
         zoom_start=6,
@@ -134,7 +113,7 @@ if seleccion == "Mapa de Avistajes":
     from folium.features import CustomIcon
 
     icono_fijo = CustomIcon(
-        icon_image='Orca.png',  # Asegurate de tener el PNG en la carpeta correcta
+        icon_image='Orca.png', 
         icon_size=(40, 40),
         icon_anchor=(20, 20)
     )
@@ -148,7 +127,6 @@ if seleccion == "Mapa de Avistajes":
 
     st_folium(mapa_orcas, width=700, height=500)
 
-# ===================== SECCIÓN 2: Gráfico por Categoría ======================
 elif seleccion == "Gráficos por Categorías":
     st.title("Orcas Península Valdés")
 
@@ -170,14 +148,11 @@ elif seleccion == "Gráficos por Categorías":
                      title=f"Cantidad de registros por {categoria}")
         st.plotly_chart(fig, use_container_width=True)
 
-# =================== SECCIÓN 3: Estadísticas Generales ===================
 elif seleccion == "Datos Generales":
     st.title("Orcas Península Valdés")
 
-    # Orcas únicas con todos los filtros aplicados
     df_orcas_filtradas = df_filtrado.drop_duplicates(subset=["Orca"])
 
-    # Orcas únicas SIN aplicar filtros de sexo/varadora (pero con otros filtros)
     df_base = df.copy()
     if grupos:
         df_base = df_base[df_base["Grupo"].isin(grupos)]
@@ -185,10 +160,8 @@ elif seleccion == "Datos Generales":
         df_base = df_base[df_base["Orca"].isin(orcas)]
     if lugares:
         df_base = df_base[df_base["Lugar"].isin(lugares)]
-    # Aplicamos rango de fechas
     df_base = df_base[(df_base["Fecha"] >= rango_fechas[0]) & (df_base["Fecha"] <= rango_fechas[1])]
 
-    # Ahora aplicamos filtros de sexo y varadora para que los gráficos y textos los usen
     if sexos:
         df_base = df_base[df_base["Sexo"].isin(sexos)]
     if varadoras:
@@ -196,7 +169,6 @@ elif seleccion == "Datos Generales":
 
     df_base_unicas = df_base.drop_duplicates(subset=["Orca"])
 
-    # Métricas generales
     col1, col2, col3 = st.columns(3)
     col1.metric("Total de orcas identificadas", df_orcas_filtradas["Orca"].nunique())
     col2.metric("Hembras", df_orcas_filtradas[df_orcas_filtradas["Sexo"] == "♀"]["Orca"].nunique())
@@ -246,7 +218,6 @@ elif seleccion == "Datos Generales":
 elif seleccion == "Relación entre Orcas":
     st.title("Orcas Península Valdés")
 
-    # --- Filtrado de datos ---
     df_filtrado = df.copy()
     if grupos:
         df_filtrado = df_filtrado[df_filtrado["Grupo"].isin(grupos)]
@@ -259,11 +230,9 @@ elif seleccion == "Relación entre Orcas":
         (df_filtrado["Fecha"] >= rango_fechas[0]) & (df_filtrado["Fecha"] <= rango_fechas[1])
     ]
 
-    # --- Obtener orcas conocidas y mapa de grupos ---
     orcas_conocidas = df_filtrado["Orca"].unique()
     mapa_grupo = df_filtrado.drop_duplicates("Orca").set_index("Orca")["Grupo"].to_dict()
 
-    # --- Generar parejas de co-avistajes ---
     df_avistajes = df_filtrado[["Fecha", "Lugar", "Orcas"]].drop_duplicates()
     parejas = []
     for orcas_str in df_avistajes["Orcas"]:
@@ -274,58 +243,49 @@ elif seleccion == "Relación entre Orcas":
 
     conteo_parejas = Counter(parejas)
 
-    # --- Parámetro: peso mínimo para mostrar relación ---
     PESO_MINIMO = 2
 
-    # --- Visualización del grafo ---
     st.subheader(f"Grafo de orcas avistadas juntas")
 
-    # --- Crear grafo con relaciones filtradas ---
     G = nx.Graph()
     for (o1, o2), peso in conteo_parejas.items():
         if peso >= PESO_MINIMO:
             G.add_edge(o1, o2, weight=peso)
 
-    # --- Layout de nodos ---
     pos = nx.spring_layout(G, k=0.7, seed=42)
 
-    # --- Colores por grupo ---
     colores_grupos = {}
     palette = px.colors.qualitative.Set3 + px.colors.qualitative.Pastel
     grupos_unicos = sorted(set(map(str, mapa_grupo.values())))
     for i, grupo in enumerate(grupos_unicos):
         rgb = palette[i % len(palette)].replace("rgb(", "").replace(")", "").split(",")
-        hex_color = '#{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
+        hex_color = '{:02x}{:02x}{:02x}'.format(int(rgb[0]), int(rgb[1]), int(rgb[2]))
         colores_grupos[grupo] = hex_color
 
     colores_nodos = []
     tamaños_nodos = []
     for nodo in G.nodes:
         grupo = mapa_grupo.get(nodo, "Desconocido")
-        color = colores_grupos.get(grupo, "#999999")
+        color = colores_grupos.get(grupo, "999999")
         colores_nodos.append(color)
         conexiones = list(G.neighbors(nodo))
         peso_total = sum(G[nodo][vecino]['weight'] for vecino in conexiones)
         tamaño = min(100 + peso_total * 30, 1000)
         tamaños_nodos.append(tamaño)
 
-    # --- Dibujar grafo con mejoras de legibilidad ---
     fig, ax = plt.subplots(figsize=(14, 12))
     nx.draw_networkx_nodes(G, pos, node_color=colores_nodos, node_size=tamaños_nodos, alpha=0.9, ax=ax)
 
-    # Bordes con grosor y transparencia proporcional al peso
     pesos = [G[u][v]['weight'] for u, v in G.edges]
     anchos = [0.5 + w * 0.8 for w in pesos]
     opacidades = [0.2 + min(w / max(pesos), 1) * 0.5 for w in pesos]
     for (u, v), ancho, alpha in zip(G.edges, anchos, opacidades):
         nx.draw_networkx_edges(G, pos, edgelist=[(u, v)], width=ancho, alpha=alpha, edge_color='black', ax=ax)
 
-    # Etiquetas con fondo blanco
     for nodo, (x, y) in pos.items():
         ax.text(x, y, nodo, fontsize=10, fontweight='bold', ha='center', va='center',
                 bbox=dict(facecolor='white', edgecolor='none', boxstyle='round,pad=0.15', alpha=0.8))
 
-    # Leyenda de grupos
     handles = [plt.Line2D([0], [0], marker='o', color='w',
                           label=grupo,
                           markerfacecolor=color,
