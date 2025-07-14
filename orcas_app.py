@@ -1,15 +1,19 @@
 import streamlit as st
-import folium
-from streamlit_folium import st_folium
 import pandas as pd
+import folium
+import base64
+import os
+from folium.plugins import MarkerCluster
+from streamlit_folium import st_folium
+from streamlit_option_menu import option_menu
 import plotly.express as px
 import itertools
 import networkx as nx
+from pyvis.network import Network
+import streamlit.components.v1 as components
 from collections import Counter
 import matplotlib.pyplot as plt
-from streamlit_option_menu import option_menu
 import seaborn as sns
-import networkx as nx
 
 st.set_page_config(page_title="Avistajes de Orcas Península Valdés", layout="wide")
 
