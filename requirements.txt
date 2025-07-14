@@ -1,0 +1,10 @@
+streamlit
+pandas
+folium
+streamlit-folium
+streamlit-option-menu
+plotly
+networkx
+pyvis
+matplotlib
+seaborn
