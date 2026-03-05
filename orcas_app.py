@@ -111,7 +111,8 @@ if seleccion == "Mapa de Avistajes":
 
     mapa_orcas = folium.Map(
         location=[-45.0, -62.0],
-        zoom_start=8,
+        zoom_start=5,
+        tiles="https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
         attr="CartoDB"
     )
     marker_cluster = MarkerCluster(
