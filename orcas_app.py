@@ -111,10 +111,20 @@ if seleccion == "Mapa de Avistajes":
 
     mapa_orcas = folium.Map(
         location=[-45.0, -62.0],
-        zoom_start=6,
-        attr="CartoDB dark_matter"
+        zoom_start=8,
+        attr="CartoDB"
     )
-    marker_cluster = MarkerCluster().add_to(mapa_orcas)
+    marker_cluster = MarkerCluster(
+        icon_create_function="""
+        function(cluster) {
+            return L.divIcon({
+                html: '<div style="background-color:#0ea5e9; color:white; border-radius:50%; width:40px; height:40px; display:flex; align-items:center; justify-content:center; font-weight:bold;">' + cluster.getChildCount() + '</div>',
+                className: 'marker-cluster',
+                iconSize: new L.Point(40, 40)
+            });
+        }
+        """
+    ).add_to(mapa_orcas)
 
     for _, row in df_avistajes_filtrado.iterrows():
         icono_orca = folium.CustomIcon(
