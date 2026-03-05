@@ -30,7 +30,6 @@ with st.sidebar:
             "Relación entre Orcas"
         ],
         icons=["map", "bar-chart", "clipboard-data", "people"],
-        menu_icon="cast", 
         default_index=0
     )
 
@@ -103,7 +102,7 @@ if seleccion == "Mapa de Avistajes":
     def crear_popup_avistaje(row):
         return folium.Popup(f"""
             <div style="width:220px; font-family:Arial; font-size:13px">
-                <strong>🐋 Orcas en el avistaje:</strong><br> {row['Orcas']}<br>
+                <strong>🐋 Orcas avistadas:</strong><br> {row['Orcas']}<br>
                 <strong>📍 Lugar:</strong> {row['Lugar']}<br>
                 <strong>📅 Fecha:</strong> {row['Fecha'].date()}<br><br>
                 <a href="{row['Link']}" target="_blank" style="color:#0077cc">🔗 Ver en Instagram</a>
@@ -137,7 +136,7 @@ elif seleccion == "Gráficos por Categorías":
     st.title("Orcas Península Valdés")
 
     orca_unica = len(orcas) == 1
-    opciones_categoria = ["Lugar", "Orca"] if orca_unica else ["Sexo", "Orca", "Grupo", "Lugar", "Varadora"]
+    opciones_categoria = ["Lugar", "Orca"] if orca_unica else ["Orca", "Grupo", "Lugar"]
 
     categoria = st.selectbox("Seleccioná una categoría para agrupar los datos:", options=opciones_categoria)
     columna_categoria = "Orca" if categoria == "Avistajes" else categoria
