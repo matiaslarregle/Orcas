@@ -119,10 +119,16 @@ if seleccion == "Mapa de Avistajes":
     marker_cluster = MarkerCluster().add_to(mapa_orcas)
 
     for _, row in df_avistajes_filtrado.iterrows():
-        folium.Marker(
-            location=[row["Latitud"], row["Longitud"]],
-            popup=crear_popup_avistaje(row)
-        ).add_to(marker_cluster)
+        icono_orca = folium.CustomIcon(
+            "Orca.png", 
+            icon_size=(40, 40)
+        )
+
+folium.Marker(
+    location=[row["Latitud"], row["Longitud"]],
+    popup=crear_popup_avistaje(row),
+    icon=icono_orca
+).add_to(marker_cluster)
 
     st_folium(mapa_orcas, width=700, height=500, returned_objects=[])
 
