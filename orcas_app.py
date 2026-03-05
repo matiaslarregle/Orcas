@@ -124,11 +124,11 @@ if seleccion == "Mapa de Avistajes":
             icon_size=(40, 40)
         )
 
-folium.Marker(
-    location=[row["Latitud"], row["Longitud"]],
-    popup=crear_popup_avistaje(row),
-    icon=icono_orca
-).add_to(marker_cluster)
+    folium.Marker(
+        location=[row["Latitud"], row["Longitud"]],
+        popup=crear_popup_avistaje(row),
+        icon=icono_orca
+    ).add_to(marker_cluster)
 
     st_folium(mapa_orcas, width=700, height=500, returned_objects=[])
 
