@@ -300,5 +300,10 @@ elif seleccion == "Relación entre Orcas":
     fig.subplots_adjust(right=0.80)
 
     ax.set_title("Orcas avistadas juntas", fontsize=14)
+    st.info(
+    """
+    Solo se muestran relaciones donde las orcas fueron vistas juntas **al menos 2 veces**.
+    """
+)
     ax.axis("off")
     st.pyplot(fig)
