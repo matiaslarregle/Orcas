@@ -110,8 +110,8 @@ if seleccion == "Mapa de Avistajes":
         """, max_width=250)
 
     mapa_orcas = folium.Map(
-        location=[-45.0, -62.0],
-        zoom_start=5,
+        location=[-42.863176, -64.347598],
+        zoom_start=7,
         tiles="https://basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",
         attr="CartoDB"
     )
@@ -227,7 +227,7 @@ elif seleccion == "Datos Generales":
 
     st.markdown("---")
 
-    st.subheader("Catálogo de Orcas")
+    st.subheader("Info Orcas")
     columnas_mostrar = ["Orca", "Sexo", "Grupo", "Varadora"]
     st.dataframe(df_orcas_filtradas[columnas_mostrar].sort_values("Orca").reset_index(drop=True))
 
